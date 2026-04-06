@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('git 가져오기') {
             steps {
-                git 'https://github.com/octocat/Hello-World.git'
+                git 'https://github.com/seobeomgpt91/docker-ci-demo.git'
             }
         }
 
