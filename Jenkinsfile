@@ -2,13 +2,16 @@ pipeline {
     agent any
 
     stages {
-        stage('git 가져오기') {
+        stage('git checkout') {
             steps {
-                git 'https://github.com/seobeomgpt91/docker-ci-demo.git'
+                checkout scmGit(
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[url: 'https://github.com/seobeomgpt91/docker-ci-demo.git']]
+                )
             }
         }
 
-        stage('확인') {
+        stage('check') {
             steps {
                 sh 'pwd'
                 sh 'ls -al'
