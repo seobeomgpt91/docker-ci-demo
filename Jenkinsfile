@@ -13,9 +13,28 @@ pipeline {
             }
         }
 
+        stage('Check Environment') {
+            steps {
+                sh '''
+                    echo "=== workspace ==="
+                    pwd
+                    ls -la
+
+                    echo "=== docker check ==="
+                    which docker || true
+                    docker --version || true
+
+                    echo "=== Dockerfile check ==="
+                    cat Dockerfile || true
+                '''
+            }
+        }
+
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                sh '''
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                '''
             }
         }
 
@@ -26,14 +45,18 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
                 }
             }
         }
 
         stage('Docker Push') {
             steps {
-                sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
+                sh '''
+                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
             }
         }
     }
