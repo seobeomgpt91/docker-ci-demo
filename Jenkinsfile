@@ -3,26 +3,13 @@ pipeline {
 
     environment {
         IMAGE_NAME = "id87sbs/study"
-        IMAGE_TAG = "latest"
+        IMAGE_TAG  = "latest"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stage('Build Jar') {
-            steps {
-                sh '''
-                    pwd
-                    ls -la
-                    sed -i 's/\r$//' gradlew || true
-                    chmod +x gradlew || true
-                    ./gradlew clean build -x test --stacktrace --info
-                    ls -la build/libs
-                '''
             }
         }
 
