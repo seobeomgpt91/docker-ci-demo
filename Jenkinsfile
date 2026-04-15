@@ -13,14 +13,28 @@ pipeline {
             }
         }
 
+        stage('Check Files') {
+            steps {
+                sh '''
+                    echo "=== workspace ==="
+                    pwd
+                    ls -la
+                    echo "=== gradle wrapper ==="
+                    ls -la gradlew || true
+                    ls -la gradle/wrapper || true
+                    echo "=== dockerfile ==="
+                    ls -la Dockerfile || true
+                '''
+            }
+        }
+
         stage('Build Jar') {
             steps {
                 sh '''
-                    pwd
-                    ls -la
                     sed -i 's/\r$//' gradlew || true
                     chmod +x gradlew || true
                     ./gradlew clean build -x test
+                    echo "=== build/libs ==="
                     ls -la build/libs
                 '''
             }
@@ -38,8 +52,8 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_PASSWORD'
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -60,12 +74,6 @@ pipeline {
     post {
         always {
             sh 'docker logout || true'
-        }
-        success {
-            echo 'Docker Hub push 성공'
-        }
-        failure {
-            echo '빌드 또는 push 실패'
         }
     }
 }
