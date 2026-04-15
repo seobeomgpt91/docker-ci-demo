@@ -13,39 +13,38 @@ pipeline {
             }
         }
 
-        stage('Build Jar') {
+        stage('Check Commands') {
             steps {
                 sh '''
+                    echo "===== PATH ====="
+                    echo $PATH
+
+                    echo "===== WHOAMI ====="
+                    whoami || true
+
+                    echo "===== GIT ====="
+                    which git || true
+                    git --version || true
+
+                    echo "===== DOCKER ====="
+                    which docker || true
+                    docker --version || true
+
+                    echo "===== WORKSPACE ====="
                     pwd
                     ls -la
-                    sed -i 's/\r$//' gradlew || true
-                    chmod +x gradlew || true
-                    ./gradlew clean build -x test
-                    ls -la build/libs
                 '''
             }
         }
 
-        stage('Docker Build') {
+        stage('Check Gradle Wrapper') {
             steps {
                 sh '''
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    ls -la gradlew || true
+                    sed -i 's/\r$//' gradlew || true
+                    chmod +x gradlew || true
+                    ./gradlew --version || true
                 '''
-            }
-        }
-
-        stage('Docker Push') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
-                }
             }
         }
     }
