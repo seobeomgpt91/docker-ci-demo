@@ -13,22 +13,11 @@ pipeline {
             }
         }
 
-        stage('Check Workspace') {
+        stage('Build Jar') {
             steps {
                 sh '''
                     pwd
                     ls -la
-                    which git || true
-                    git --version || true
-                    which docker || true
-                    docker --version || true
-                '''
-            }
-        }
-
-        stage('Build Jar') {
-            steps {
-                sh '''
                     sed -i 's/\r$//' gradlew || true
                     chmod +x gradlew || true
                     ./gradlew clean build -x test
@@ -37,7 +26,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Build') {
             steps {
                 sh '''
                     docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
@@ -45,7 +34,7 @@ pipeline {
             }
         }
 
-        stage('Push Docker Hub') {
+        stage('Docker Push') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -58,12 +47,6 @@ pipeline {
                     '''
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            sh 'docker logout || true'
         }
     }
 }
