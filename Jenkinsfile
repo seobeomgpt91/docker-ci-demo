@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "bsseo/study"
-        IMAGE_TAG  = "latest"
+        IMAGE_TAG = "latest"
     }
 
     stages {
@@ -13,14 +13,26 @@ pipeline {
             }
         }
 
-        stage('Build Jar') {
+        stage('Check Workspace') {
             steps {
                 sh '''
                     pwd
                     ls -la
+                    which git || true
+                    git --version || true
+                    which docker || true
+                    docker --version || true
+                '''
+            }
+        }
+
+        stage('Build Jar') {
+            steps {
+                sh '''
                     sed -i 's/\r$//' gradlew || true
                     chmod +x gradlew || true
                     ./gradlew clean build -x test
+                    ls -la build/libs
                 '''
             }
         }
@@ -52,12 +64,6 @@ pipeline {
     post {
         always {
             sh 'docker logout || true'
-        }
-        success {
-            echo 'Docker image build and push success'
-        }
-        failure {
-            echo 'Build failed'
         }
     }
 }
