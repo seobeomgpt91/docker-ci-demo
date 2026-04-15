@@ -13,13 +13,40 @@ pipeline {
             }
         }
 
+        stage('Check Environment') {
+            steps {
+                sh '''
+                    echo "=== PATH ==="
+                    echo $PATH
+
+                    echo "=== whoami ==="
+                    whoami || true
+
+                    echo "=== check commands ==="
+                    which sh || true
+                    which sed || true
+                    which chmod || true
+                    which docker || true
+                    which git || true
+
+                    echo "=== versions ==="
+                    docker --version || true
+                    git --version || true
+
+                    echo "=== workspace ==="
+                    pwd
+                    ls -la
+                '''
+            }
+        }
+
         stage('Build Jar') {
             steps {
                 sh '''
-                    pwd
-                    ls -la
+                    ls -la gradlew || true
                     sed -i 's/\r$//' gradlew || true
                     chmod +x gradlew || true
+                    ./gradlew --version || true
                     ./gradlew clean build -x test
                     ls -la build/libs
                 '''
@@ -60,12 +87,6 @@ pipeline {
     post {
         always {
             sh 'docker logout || true'
-        }
-        success {
-            echo 'Docker Hub push 성공'
-        }
-        failure {
-            echo '빌드 또는 push 실패'
         }
     }
 }
